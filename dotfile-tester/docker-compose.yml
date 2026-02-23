@@ -1,0 +1,12 @@
+services:
+  alpine:
+    image: alpine-latest
+    container_name: dotfile-test
+    volumes: 
+      - ..:/dotfiles
+    working_dir: /dotfiles
+    stdin_open: true
+    tty: true
+    command: sh
+    environment:
+      - HOME=/tmp/home
