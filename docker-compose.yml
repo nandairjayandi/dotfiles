@@ -1,0 +1,11 @@
+services:
+  dotfiles-alpine:
+    # image: alpine
+    build: .
+    container_name: dotfile-test
+    # volumes:
+    #   - .:/dotfiles:ro
+    working_dir: /dotfiles
+    stdin_open: true
+    tty: true
+    command: sh
