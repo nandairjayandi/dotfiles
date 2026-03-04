@@ -1,0 +1,17 @@
+brew "mas"
+
+cask "1password"
+cask "alfred"
+cask "bettertouchtool"
+cask "dropbox"
+cask "firefox"
+cask "karabiner-elements"
+cask "keka"
+cask "obsidian"
+cask "onyx"
+cask "pdf-expert"
+
+cask "tailscale-app"
+cask "todoist-app"
+cask "vlc"
+cask "wezterm"
