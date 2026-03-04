@@ -1,0 +1,16 @@
+{{- $machine := promptString "Machine type? (work/personal/gaming/graphicdesign)" -}}
+{{- $email := promptString "Git email?" -}}
+
+{{- $zdotdir := env "ZDOTDIR" | default (printf "%s/.config/zsh" .chezmoi.homeDir) -}}
+{{- $xdgconfig := env "XDG_CONFIG_HOME" | default (printf "%s/.config" .chezmoi.homeDir) -}}
+{{- $xdgdata := env "XDG_DATA_HOME" | default (printf "%s/.local/share" .chezmoi.homeDir) -}}
+{{- $xdgcache := env "XDG_CACHE_HOME" | default (printf "%s/.cache" .chezmoi.homeDir) -}}
+
+[data]
+    machine = "{{ $machine }}"
+    email = "{{ $email }}"
+    
+    zdotdir = "{{ $zdotdir }}"
+    xdg_config = "{{ $xdgconfig }}"
+    xdg_data = "{{ $xdgdata }}"
+    xdg_cache = "{{ $xdgcache }}"

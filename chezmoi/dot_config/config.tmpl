@@ -1,0 +1,8 @@
+[user]
+    name = David
+    email = {{ .email }}
+
+{{ if eq .machine "work" }}
+[core]
+    sshCommand = ssh -i ~/.ssh/work_key
+{{ end }}

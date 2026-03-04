@@ -1,0 +1,19 @@
+# always
+brew "neovim"
+brew "fzf"
+brew "zsh"
+
+{{ if eq .machine "work" }}
+brew "microsoft-teams"
+brew "slack"
+{{ end }}
+
+{{ if eq .machine "gaming" }}
+brew "steam"
+cask "discord"
+{{ end }}
+
+{{ if eq .machine "graphicdesign" }}
+cask "adobe-creative-cloud"
+cask "figma"
+{{ end }}

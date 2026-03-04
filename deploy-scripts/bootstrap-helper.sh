@@ -1,12 +1,6 @@
 #!/bin/sh
 
 ### Message Helpers ###
-# print_message() {
-#     local style=$1
-#     local message=$2
-#     printf "%s%s"
-# }
-
 print_info() {
     printf "%s%s\n" "[INFO]: " "$1"
 }
@@ -28,15 +22,15 @@ get_bool() {
     
     while :; do
         if [ "$default" = "Y" ]; then
-            printf "%s [Y/n]: " "$prompt"
+            printf "%s [Y/n]: " "$prompt" >&2
             read -r input
             [ -z "$input" ] && input="Y"
         elif [ "$default" = "N" ]; then
-            printf "%s [y/N]: " "$prompt"
+            printf "%s [y/N]: " "$prompt" >&2
             read -r input
             [ -z "$input" ] && input="N"
         else
-            printf "%s [y/n]: " "$1"
+            printf "%s [y/n]: " "$1" >&2
             read -r input
         fi
         case "$input" in
@@ -123,23 +117,6 @@ drop_sudo() {
         print_info "sudo privilege revoked"
     fi
 }
-
-# try_sudo() {
-#     cmd=$1
-#     shift
-
-#     cmd_path=$(command -v "$cmd") || return 1
-#     cmd_dir=${cmd_path%/*}
-
-#     if is_root || [ -w "$cmd_dir" ]; then
-#         "$cmd" "$@"
-#     elif command_exists sudo && ! is_root; then
-#         sudo "$cmd" "$@"
-#     else 
-#         print_error "Cannot execute "$cmd" (no permission and no sudo)"
-#         return 1
-#     fi
-# }
 
 ### System Manager
 detect_os() {
