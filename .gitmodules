@@ -4,3 +4,12 @@
 [submodule "tools/fzf"]
 	path = tools/fzf
 	url = https://github.com/junegunn/fzf.git
+[submodule "zsh/powerlevel10k"]
+	path = zsh/powerlevel10k
+	url = https://github.com/romkatv/powerlevel10k.git
+[submodule "zsh/plugins/powerlevel10k"]
+	path = zsh/plugins/powerlevel10k
+	url = https://github.com/romkatv/powerlevel10k.git
+[submodule "zsh/ohmyzsh-src"]
+	path = zsh/ohmyzsh-src
+	url = https://github.com/ohmyzsh/ohmyzsh.git
