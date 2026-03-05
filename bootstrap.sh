@@ -285,12 +285,6 @@ print_info "OS=$OS"
 print_info "PAX_MANAGER=$PAX_MANAGER"
 print_info "$SCRIPT_DIR"
 
-# Default XDG paths
-export XDG_DATA_HOME="$HOME"/.local/share
-export XDG_CONFIG_HOME="$HOME"/.config
-export XDG_STATE_HOME="$HOME"/.local/state
-export XDG_CACHE_HOME="$HOME"/.cache
-
 install_package -y git curl zsh
 
 if [ "$(get_bool "Handoff to Chezmoi?" "Y")" = "Y" ]; then
