@@ -19,32 +19,33 @@ get_bool() {
     prompt=$1
     default=$2
     input=
-    
+
     while :; do
-        if [ "$default" = "Y" ]; then
-            printf "%s [Y/n]: " "$prompt" >&2
-            read -r input
-            [ -z "$input" ] && input="Y"
-        elif [ "$default" = "N" ]; then
-            printf "%s [y/N]: " "$prompt" >&2
-            read -r input
-            [ -z "$input" ] && input="N"
+        case "$default" in
+            Y) printf '%s [Y/n] (5s): ' "$prompt" >&2 ;;
+            N) printf '%s [y/N] (5s): ' "$prompt" >&2 ;;
+            *) printf '%s [y/n]: '      "$prompt" >&2 ;;
+        esac
+
+        if [ -n "$default" ] && [ -t 0 ]; then
+            read -t 5 -r input || {
+                input="$default"
+                printf '\nNo input! defaulting to: %s\n' "$input" >&2
+            }
         else
-            printf "%s [y/n]: " "$1" >&2
             read -r input
         fi
+
+        [ -z "$input" ] && [ -n "$default" ] && input="$default"
+
         case "$input" in
-            [Yy]*)
-                echo "Y" && return;;
-            [Nn]*)
-                echo "N" && return;;
-            *)
-                print_error "Please answer with Y or N";;
+            [Yy]*) echo "Y"; return ;;
+            [Nn]*) echo "N"; return ;;
+            *)     print_error "Please answer with Y or N" ;;
         esac
     done
 }
 
-# the current implementation is fragile but usable for this bootstrap
 get_user_input() {
     if [ $# -lt 2 ]; then
         print_error "Usage: get_user_input <prompt> <option1> [option2 ...] [-d <default>]"
@@ -56,8 +57,8 @@ get_user_input() {
 
     default=""
     options=""
+    delim=""
 
-    # Separate options from -d flag
     while [ $# -gt 0 ]; do
         case "$1" in
             -d)
@@ -66,7 +67,8 @@ get_user_input() {
                 shift 2
                 ;;
             *)
-                options="$options $1"
+                options="${options}${delim}${1}"
+                delim="|"
                 shift
                 ;;
         esac
@@ -80,25 +82,25 @@ get_user_input() {
     fi
 
     if [ -n "$default" ]; then
-        valid=false
-        for opt in $options; do
-            [ "$opt" = "$default" ] && valid=true && break
-        done
-        if [ "$valid" = false ]; then
-            print_error "Default '$default' is not in options: $options"
-            return 1
-        fi
+        case "|${options}|" in
+            *"|${default}|"*) ;;
+            *) print_error "Default '$default' is not in options: $(echo "$options" | tr '|' ' ')"; return 1 ;;
+        esac
     fi
 
+    # Build display string
     display=""
+    delim=""
+    IFS="|"
     for opt in $options; do
         if [ "$opt" = "$default" ]; then
-            display="$display [$opt]"
+            display="${display}${delim}[${opt}]"
         else
-            display="$display $opt"
+            display="${display}${delim}${opt}"
         fi
+        delim=" "
     done
-    display="${display# }"
+    unset IFS
 
     while :; do
         printf "%s (%s): " "$prompt" "$display" >&2
@@ -106,14 +108,17 @@ get_user_input() {
 
         [ -z "$input" ] && [ -n "$default" ] && input="$default"
 
+        IFS="|"
         for opt in $options; do
             if [ "$input" = "$opt" ]; then
+                unset IFS
                 echo "$input"
                 return 0
             fi
         done
+        unset IFS
 
-        print_error "Invalid option, choose from: $options"
+        print_error "Invalid option, choose from: $(echo "$options" | tr '|' ' ')"
     done
 }
 
@@ -175,44 +180,44 @@ detect_os() {
 
 detect_pax_manager() {
     pax_manager=""
+    delim=""
     os=$(detect_os)
 
     case "$os" in
         darwin)
-            command_exists brew && pax_manager="$pax_manager brew"
+            command_exists brew && pax_manager="brew"
         ;;
         linux)
-            command_exists apt && pax_manager="$pax_manager apt"
-            command_exists apk && pax_manager="$pax_manager apk"
-            command_exists dnf && pax_manager="$pax_manager dnf"
-            command_exists yum && pax_manager="$pax_manager yum"
-            command_exists pacman && pax_manager="$pax_manager pacman"
-            command_exists snap && pax_manager="$pax_manager snap"
+            for mgr in apt apk dnf yum pacman snap; do
+                command_exists "$mgr" && pax_manager="${pax_manager}${delim}${mgr}" && delim="|"
+            done
         ;;
         windows)
-            command_exists scoop && pax_manager="$pax_manager scoop"
-            command_exists choco && pax_manager="$pax_manager choco"
-            command_exists winget && pax_manager="$pax_manager winget"
+            for mgr in scoop choco winget; do
+                command_exists "$mgr" && pax_manager="${pax_manager}${delim}${mgr}" && delim="|"
+            done
         ;;
-        *) 
-            command_exists nix && pax_manager="$pax_manager nix"
+        *)
+            command_exists nix && pax_manager="nix"
         ;;
     esac
 
-    # if pax_manager ... # when there are more than few, prompt user for manual input
-    pax_manager="${pax_manager# }"
-
-    set -- $pax_manager
-    count=$#
-
-    if [ "$count" -eq 0 ]; then
+    if [ -z "$pax_manager" ]; then
         print_error "Cannot detect package manager"
-    elif [ "$count" -eq 1 ]; then
-        echo $pax_manager
-    else
-        get_user_input "Detected multiple package manager" "$pax_manager"
+        return 1
     fi
 
+    # Count without clobbering $@
+    count=$(printf '%s' "$pax_manager" | tr -cd '|' | wc -c)
+    count=$((count + 1))
+
+    if [ "$count" -eq 1 ]; then
+        echo "$pax_manager"
+    else
+        IFS="|"
+        get_user_input "Detected multiple package managers" $pax_manager
+        unset IFS
+    fi
 }
 
 manager_requires_root() {
