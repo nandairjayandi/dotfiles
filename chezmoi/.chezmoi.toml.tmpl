@@ -26,7 +26,7 @@
 {{- end -}}
 
 {{- if not $ephemeral -}}
-{{-     if or (hasSuffix $hostname "-DC") (hasSuffix $hostname "-LC") -}}
+{{-     if or (hasSuffix (upper $hostname) "-DC") (hasSuffix (upper $hostname) "-LC") -}}
 {{-         $personal := true -}}
 {{-     else if stdinIsATTY -}}
 {{-         $headless = promptBoolOnce . "headless" "headless" -}}
