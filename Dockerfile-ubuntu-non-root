@@ -1,0 +1,17 @@
+FROM ubuntu:latest
+
+COPY . /dotfiles
+WORKDIR /dotfiles
+
+# Create non-root user
+# RUN useradd -m -s /bin/sh testuser && \
+#     chown -R testuser:testuser /dotfiles
+
+RUN apt-get update && apt-get install -y sudo && \
+    useradd -m -s /bin/sh testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers && \
+    chown -R testuser:testuser /dotfiles
+
+USER testuser
+
+CMD ["./bootstrap.sh"]

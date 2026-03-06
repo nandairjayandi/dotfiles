@@ -1,10 +1,32 @@
 services:
   dotfiles-alpine:
     # image: alpine
-    build: .
-    container_name: dotfile-test
+    build: 
+      context: .
+      dockerfile: Dockerfile-alpine
+    container_name: dotfiles-alpine
     # volumes:
     #   - .:/dotfiles:ro
+    working_dir: /dotfiles
+    stdin_open: true
+    tty: true
+    command: sh
+
+  dotfiles-ubuntu-non-root:
+    build:
+      context: .
+      dockerfile: Dockerfile-ubuntu-non-root
+    container_name: dotfiles-ubuntu-non-root
+    working_dir: /dotfiles
+    stdin_open: true
+    tty: true
+    command: sh
+
+  dotfiles-ubuntu-root:
+    build:
+      context: .
+      dockerfile: Dockerfile-ubuntu-root
+    container_name: dotfiles-ubuntu-root
     working_dir: /dotfiles
     stdin_open: true
     tty: true
