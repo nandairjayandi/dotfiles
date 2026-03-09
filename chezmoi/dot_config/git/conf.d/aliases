@@ -1,2 +1,10 @@
 [alias]
     a = add
+    s = status
+    l = log
+    c = commit
+    cm = commit -m
+    bs = branch --sort=committerdate
+    b = branch
+
+    
