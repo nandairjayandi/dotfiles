@@ -74,8 +74,6 @@ get_user_input() {
         esac
     done
 
-    options="${options# }"
-
     if [ -z "$options" ]; then
         print_error "No options provided"
         return 1
@@ -268,8 +266,6 @@ update_pax_manager() {
     fi
 }
 
-
-
 install_package() {
     SUDO=""
     bypass_confirm=false
@@ -335,9 +331,9 @@ install_package() {
         esac
 
         if [ -n "$SUDO" ]; then
-            $SUDO $pax_manager $CMD || { print_error "Failed to install $pax"; return 1; }
+            eval $SUDO $pax_manager $CMD || { print_error "Failed to install $pax"; return 1; }
         else
-            $pax_manager $CMD || { print_error "Failed to install $pax"; return 1; }
+            eval $pax_manager $CMD || { print_error "Failed to install $pax"; return 1; }
         fi
     done
 }

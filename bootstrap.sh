@@ -4,7 +4,7 @@
 
 set -e
 
-DOTFILES="$(cd "$(dirname "$0")" && pwd)" && . "$DOTFILES"/chezmoi/dot_local/bin/executable_install-helper.sh
+DOTFILES="$(cd "$(dirname "$0")" && pwd)" && . "$DOTFILES"/chezmoi/dot_local/bin/install-helper.sh
 OS=$(detect_os)
 PAX_MANAGER=$(detect_pax_manager)
 
