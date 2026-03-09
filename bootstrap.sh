@@ -15,7 +15,11 @@ print_info "PAX_MANAGER=$PAX_MANAGER"
 print_info "$DOTFILES"
 
 update_pax_manager
-install_package  -y curl git zsh bash 
+install_package  -y curl git zsh
+
+if command_exists "chsh"; then
+    chsh -s /usr/bin/zsh
+fi
 
 # for boot_script in "bin/"*; do
 #     . "$boot_script"
