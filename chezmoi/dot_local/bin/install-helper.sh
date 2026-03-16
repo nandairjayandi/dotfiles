@@ -1,5 +1,7 @@
 #!/bin/sh
 
+PAX_MANAGER_CACHE="$HOME/.config/dotfiles/pax-manager.conf"
+
 ### Message Helpers ###
 print_info() {
     printf "%s%s\n" "[INFO]: " "$1"
@@ -13,6 +15,8 @@ print_error() {
 command_exists() {
      type "$1" >/dev/null 2>&1;
 }
+
+
 
 ### User Helper
 get_bool() {
@@ -146,8 +150,6 @@ drop_sudo() {
     fi
 }
 
-
-
 ### System Manager
 detect_os() {
     if [ -z "$OSTYPE" ]; then
@@ -177,45 +179,38 @@ detect_os() {
 }
 
 detect_pax_manager() {
+    if [ -f "$PAX_MANAGER_CACHE" ] && [ -r "$PAX_MANAGER_CACHE" ]; then
+        cat "$PAX_MANAGER_CACHE"
+        return 0
+    fi
+
     pax_manager=""
     delim=""
-    os=$(detect_os)
 
-    case "$os" in
-        darwin)
-            command_exists brew && pax_manager="brew"
-        ;;
-        linux)
-            for mgr in apt apk dnf yum pacman snap; do
-                command_exists "$mgr" && pax_manager="${pax_manager}${delim}${mgr}" && delim="|"
-            done
-        ;;
-        windows)
-            for mgr in scoop choco winget; do
-                command_exists "$mgr" && pax_manager="${pax_manager}${delim}${mgr}" && delim="|"
-            done
-        ;;
-        *)
-            command_exists nix && pax_manager="nix"
-        ;;
-    esac
+    for mgr in nix brew apt apk dnf yum pacman snap winget scoop choco; do
+        command_exists "$mgr" && pax_manager="${pax_manager}${delim}${mgr}" && delim="|"
+    done
 
     if [ -z "$pax_manager" ]; then
         print_error "Cannot detect package manager"
         return 1
     fi
 
-    # Count without clobbering $@
     count=$(printf '%s' "$pax_manager" | tr -cd '|' | wc -c)
     count=$((count + 1))
 
-    if [ "$count" -eq 1 ]; then
-        echo "$pax_manager"
-    else
+    if [ "$count" -gt 1 ]; then
         IFS="|"
-        get_user_input "Detected multiple package managers" $pax_manager
+        selected=$(get_user_input "Detected multiple package managers" $pax_manager)
         unset IFS
+        pax_manager="$selected"
     fi
+
+    mkdir -p "$(dirname "$PAX_MANAGER_CACHE")"
+    printf '%s\n' "$pax_manager" > "$PAX_MANAGER_CACHE"
+    print_info "Package manager '$pax_manager' saved to $PAX_MANAGER_CACHE"
+
+    echo "$pax_manager"
 }
 
 manager_requires_root() {
@@ -303,6 +298,12 @@ install_package() {
         print_info "Installing '$pax' with '$pax_manager'"
 
         case "$pax_manager" in
+            nix)
+                nix profile install "nixpkgs#$pax" || {
+                    print_error "Failed to install $pax via nix"
+                    return 1
+                }
+                ;;
             apt)
                 [ "$bypass_confirm" = true ] && CMD="install -y $pax" || CMD="install $pax"
                 ;;
@@ -321,7 +322,7 @@ install_package() {
             snap)
                 [ "$bypass_confirm" = true ] && CMD="install $pax --yes" || CMD="install $pax"
                 ;;
-            brew|nix|scoop|choco|winget)
+            brew|scoop|choco|winget)
                 CMD="install $pax"
                 ;;
             *)

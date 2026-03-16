@@ -4,7 +4,8 @@
 
 set -e
 
-DOTFILES="$(cd "$(dirname "$0")" && pwd)" && . "$DOTFILES"/chezmoi/dot_local/bin/install-helper.sh
+DOTFILES="$(cd "$(dirname "$0")" && pwd)"
+. "$DOTFILES"/chezmoi/dot_local/bin/install-helper.sh
 OS=$(detect_os)
 PAX_MANAGER=$(detect_pax_manager)
 
@@ -15,11 +16,16 @@ print_info "PAX_MANAGER=$PAX_MANAGER"
 print_info "$DOTFILES"
 
 update_pax_manager
-install_package  -y curl git zsh
 
-if command_exists "chsh"; then
-    chsh -s /usr/bin/zsh
+if [ "$(get_bool "Install Nix?" "Y")" = "Y" ]; then
+    sh -c "$DOTFILES"/chezmoi/dot_local/bin/executable_install-nix.sh
 fi
+
+install_package -y curl git zsh
+
+# if command_exists "chsh"; then
+#     chsh -s /usr/bin/zsh
+# fi
 
 # for boot_script in "bin/"*; do
 #     . "$boot_script"
